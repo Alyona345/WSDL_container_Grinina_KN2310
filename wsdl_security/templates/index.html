@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Защита WSDL-сервера</title> <!--Заголовок вкладки браузера-->
+    <!--Начало таблицы стилей CSS-->
+    <style>         
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5; 
+        }         
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }         
+        h1 {
+            color: #333;
+            text-align: center;
+        }         
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }         
+        .stat-card {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+        }        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+        }         
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }         
+        .chart {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        .chart img {
+            width: 100%;
+            height: auto;
+        }        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+        }
+        .blocked { color: red; font-weight: bold; }
+        .allowed { color: green; font-weight: bold; }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container"> 
+        <h1>Обработка и фильтрация HTTP/HTTPS-запросов к WSDL-сервисам</h1> <!--Заголовок страницы-->
+
+        <div class="stats"> <!--Отображение статистических данных-->
+            <div class="stat-card"> <!--Создание блока со статистическими данными-->
+                <div>Порог блокировки</div> <!--Подпись показателя-->
+                <div class="stat-value">{{ threshold }}</div> <!--HTML-элемент, который используется для отображения числового значения порога блокировки-->
+                <div>запросов/мин</div> <!--Подпись единицы измерения-->
+            </div>
+            <div class="stat-card"> <!--Создание блока со статистическими данными-->
+                <div>Заблокировано</div> <!--Наименование блока-->
+                <div class="stat-value">{{ blocked_count }}</div> <!--HTML-элемент, который используется для отображения количества заблокированных IP-->
+                <div>IP-адресов</div>
+            </div>
+            <div class="stat-card">
+                <div>Разрешено</div>
+                <div class="stat-value">{{ allowed_count }}</div> <!--HTML-элемент, который используется для отображения количества разрешённых IP-->
+                <div>IP-адресов</div>
+            </div>
+        </div>
+
+        <div class="charts">
+            <div class="chart">
+                <h3>Активность IP-адресов</h3>
+                <img src="data:image/png;base64,{{ chart13 }}" alt="Активность IP"> <!--Отображение графика активности IP-адресов в HTML-->
+            </div> 
+            <div class="chart">
+                <h3>Статус IP-адресов</h3>
+                <img src="data:image/png;base64,{{ chart15 }}" alt="Статус IP"> <!--Отображение графика со статусом IP-адресов в HTML-->
+            </div>
+        </div>
+
+        <h3>Таблица IP-адресов</h3> <!--Заголовок таблицы-->
+        <table>
+            <thead>
+                <tr><th>IP-адрес</th><th>Запросов/мин</th><th>Статус</th></tr> <!--Наименования столбцов таблицы-->
+            </thead>
+            <tbody>
+                {% for ip in ip_status_list %} <!--Генерация строк для каждого IP-адреса-->
+                <tr>
+                    <td>{{ ip.address }}</td>
+                    <td>{{ ip.requests }}</td> <!--Ячейки таблицы, содержащие IP-адрес и количество запросов-->
+                    <td class="{% if ip.status == 'ЗАБЛОКИРОВАН' %}blocked{% else %}allowed{% endif %}">
+                        {% if ip.status == 'ЗАБЛОКИРОВАН' %}ЗАБЛОКИРОВАН{% else %}РАЗРЕШЕН{% endif %} <!--Условное форматирование статуса IP-адреса--> 
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="footer"> <!--Создание подвала (футера) страницы--> 
+            <p>Угроза УБИ.151 "Сканирование веб-сервисов, разработанных на основе языка описания WSDL"</p> <!--Текстовый абзац с описанием угрозы--> 
+        </div>
+    </div>
+</body>
+</html>
+
+<!--Лысенкова М.А.: приложение разворачивается без проблем, с первого раза-->
+
