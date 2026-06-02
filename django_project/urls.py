@@ -19,6 +19,18 @@ from django.urls import path
 from wsdl_security import views
 
 urlpatterns = [
+    # Админ-панель Django
     path('admin/', admin.site.urls),
+
+    # ГЛАВНАЯ СТРАНИЦА - статистика и графики
+    # URL: http://127.0.0.1:8000/
     path('', views.index, name='index'),
+
+    # НОВАЯ СТРАНИЦА - просмотр фейковых WSDL-ответов
+    # URL: http://127.0.0.1:8000/fake-wsdl/
+    path('fake-wsdl/', views.fake_wsdl_viewer, name='fake_wsdl_viewer'),
+
+    # НОВЫЙ МАРШРУТ - скачивание фейкового WSDL для конкретного IP
+    # URL: http://127.0.0.1:8000/fake-wsdl/download/192.165.1.10/
+    path('fake-wsdl/download/<str:ip_address>/', views.download_fake_wsdl, name='download_fake_wsdl'),
 ]

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Просмотр фейковых WSDL-ответов | УБИ.151</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .nav a {
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        .nav a:first-child {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .nav a:last-child {
+            background: #e74c3c;
+        }
+
+        .nav a:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: bold;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .panel {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .panel h3 {
+            color: #555;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .ip-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .ip-list li {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .ip-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .ip-list li a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+
+        .ip-list .attempts {
+            font-size: 12px;
+            color: #e74c3c;
+            margin-top: 5px;
+        }
+
+        .ip-list .active {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .wsdl-viewer {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .wsdl-viewer pre {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #2ecc71;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge.wsdl {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            .stat-card {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍭 Просмотр фейковых WSDL-ответов</h1>
+        <div class="subtitle">
+            Угроза <strong>УБИ.151</strong> "Сканирование веб-сервисов WSDL"<br>
+            Здесь показано, какие поддельные WSDL получают злоумышленники
+        </div>
+
+        <div class="nav">
+            <a href="/">📊 Главная страница (статистика)</a>
+            <a href="/fake-wsdl/" style="background: #e74c3c;">🍭 Фейковые WSDL (текущая)</a>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_attacks }}</div>
+                <div>🔍 IP-адресов-нарушителей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ total_fake_wsdl_sent }}</div>
+                <div>🍭 Фейковых WSDL отправлено</div>
+            </div>
+        </div>
+
+        <!-- Информационное пояснение -->
+        <div class="info-box">
+            <strong>💡 Как работает защита от УБИ.151:</strong><br>
+            Когда злоумышленник пытается получить WSDL-файл (через <code>?wsdl</code>, <code>/service.asmx</code> и т.д.),
+            наш контейнер вместо реального WSDL возвращает <strong>поддельный (фейковый) WSDL</strong>.
+            Сканер получает фиктивную структуру, что вводит его в заблуждение и защищает реальный сервис.
+        </div>
+
+        {% if attackers %}
+        <div class="two-columns">
+            <!-- Левая колонка: список нарушителей -->
+            <div class="panel">
+                <h3>🔍 Нарушители (получили фейковый WSDL)</h3>
+                <ul class="ip-list">
+                    {% for attacker in attackers %}
+                    <li class="{% if selected_ip == attacker.ip %}active{% endif %}">
+                        <a href="?ip={{ attacker.ip }}">
+                            <strong>{{ attacker.ip }}</strong>
+                            <span class="badge wsdl">WSDL-сканер</span>
+                            <div class="attempts">
+                                Попыток WSDL-запросов: {{ attacker.attempts }} | 
+                                Фейков отправлено: {{ attacker.fake_count }}
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Правая колонка: просмотр фейкового WSDL -->
+            <div class="panel">
+                <h3>
+                    🍭 Фейковый WSDL-ответ
+                    {% if selected_ip %}
+                        <span style="font-size: 14px; color: #e74c3c;">для {{ selected_ip }}</span>
+                    {% endif %}
+                </h3>
+
+                {% if selected_wsdl %}
+                    <div class="wsdl-viewer">
+                        <pre>{{ selected_wsdl|escape }}</pre>
+                    </div>
+                    <a href="/fake-wsdl/download/{{ selected_ip }}/" class="download-btn">
+                        📥 Скачать фейковый WSDL ({{ selected_ip }}.xml)
+                    </a>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        ⚠️ Это НЕ настоящий WSDL сервиса! Сканеры получают именно такой ответ.
+                    </p>
+                {% else %}
+                    <div class="empty-state">
+                        <p>👈 Выберите IP-адрес из списка слева</p>
+                        <p style="font-size: 12px; margin-top: 10px;">
+                            Чтобы увидеть, какой фейковый WSDL получил злоумышленник
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>⚠️ Нет обнаруженных WSDL-атак</p>
+            <p style="font-size: 12px; margin-top: 10px;">
+                Для демонстрации работы защиты, в lab3.py добавлены тестовые WSDL-атаки с IP: 192.165.1.10, 10.0.0.5, 172.16.0.3, 10.0.0.15
+            </p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p><strong>Угроза УБИ.151</strong> | Защита реализована через подмену WSDL-ответов</p>
+            <p>Злоумышленник видит фейковую структуру, реальный WSDL скрыт</p>
+        </div>
+    </div>
+</body>
+</html>

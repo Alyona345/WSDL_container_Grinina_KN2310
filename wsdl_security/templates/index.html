@@ -2,139 +2,378 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Защита WSDL-сервера</title> <!--Заголовок вкладки браузера-->
-    <!--Начало таблицы стилей CSS-->
+    <title>Защита WSDL-сервера от сканирования (УБИ.151)</title>
     <style>         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 20px;
-            background: #f5f5f5; 
-        }         
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }         
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
         h1 {
             color: #333;
             text-align: center;
-        }         
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        /* Навигация между страницами */
+        .nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .nav a {
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        .nav a:first-child {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .nav a:last-child {
+            background: #e74c3c;
+        }
+
+        .nav a:hover {
+            transform: translateY(-2px);
+        }
+
         .stats {
             display: flex;
             justify-content: space-around;
             margin-bottom: 30px;
-        }         
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
         .stat-card {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 12px;
             text-align: center;
-            width: 200px;
-        }        
+            min-width: 160px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card.wsdl {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.fake {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card.block {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .stat-card.allow {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
         .stat-value {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: bold;
-        }         
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
         .charts {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 20px;
-        }         
-        .chart {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 15px;
-            background: #fafafa;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
         }
+
+        .chart {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fafafa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .chart h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
         .chart img {
             width: 100%;
             height: auto;
-        }        
+            border-radius: 8px;
+        }
+
+        .chart-caption {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            text-align: center;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 30px;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+
         th, td {
-            padding: 10px;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         th {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            font-weight: 600;
         }
-        .blocked { color: red; font-weight: bold; }
-        .allowed { color: green; font-weight: bold; }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .blocked { color: #e74c3c; font-weight: bold; }
+        .allowed { color: #27ae60; font-weight: bold; }
+
+        .wsdl-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .fake-badge {
+            background: #f39c12;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+        }
+
         .footer {
-            margin-top: 20px;
+            margin-top: 30px;
+            padding-top: 20px;
             font-size: 12px;
             color: #999;
             text-align: center;
+            border-top: 1px solid #ddd;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .stats { flex-direction: column; }
+            .stat-card { min-width: auto; }
+            .charts { grid-template-columns: 1fr; }
+            th, td { font-size: 12px; padding: 8px; }
         }
     </style>
 </head>
 <body>
-    <div class="container"> 
-        <h1>Обработка и фильтрация HTTP/HTTPS-запросов к WSDL-сервисам</h1> <!--Заголовок страницы-->
+    <div class="container">
+        <h1>🛡️ Защита WSDL-сервера от сканирования</h1>
+        <div class="subtitle">
+            Контейнер безопасности для фильтрации HTTP/HTTPS-запросов<br>
+            <strong>Угроза УБИ.151</strong> "Сканирование веб-сервисов, разработанных на основе WSDL"
+        </div>
 
-        <div class="stats"> <!--Отображение статистических данных-->
-            <div class="stat-card"> <!--Создание блока со статистическими данными-->
-                <div>Порог блокировки</div> <!--Подпись показателя-->
-                <div class="stat-value">{{ threshold }}</div> <!--HTML-элемент, который используется для отображения числового значения порога блокировки-->
-                <div>запросов/мин</div> <!--Подпись единицы измерения-->
-            </div>
-            <div class="stat-card"> <!--Создание блока со статистическими данными-->
-                <div>Заблокировано</div> <!--Наименование блока-->
-                <div class="stat-value">{{ blocked_count }}</div> <!--HTML-элемент, который используется для отображения количества заблокированных IP-->
-                <div>IP-адресов</div>
-            </div>
+        <!-- Навигация между страницами -->
+        <div class="nav">
+            <a href="/">📊 Главная статистика</a>
+            <a href="/fake-wsdl/">🍭 Посмотреть фейковые WSDL</a>
+        </div>
+
+        <!-- Карточки статистики -->
+        <div class="stats">
             <div class="stat-card">
-                <div>Разрешено</div>
-                <div class="stat-value">{{ allowed_count }}</div> <!--HTML-элемент, который используется для отображения количества разрешённых IP-->
-                <div>IP-адресов</div>
+                <div class="stat-value">{{ threshold }}</div>
+                <div class="stat-label">📊 Порог блокировки (запросов/мин)</div>
+            </div>
+            <div class="stat-card allow">
+                <div class="stat-value">{{ allowed_count }}</div>
+                <div class="stat-label">✅ Разрешено IP</div>
+            </div>
+            <div class="stat-card block">
+                <div class="stat-value">{{ blocked_count }}</div>
+                <div class="stat-label">🔒 Заблокировано IP</div>
+            </div>
+            <div class="stat-card wsdl">
+                <div class="stat-value">{{ wsdl_attacks_count }}</div>
+                <div class="stat-label">⚠️ WSDL-атак обнаружено</div>
+            </div>
+            <div class="stat-card fake">
+                <div class="stat-value">{{ fake_wsdl_sent }}</div>
+                <div class="stat-label">🍭 Фейковых WSDL выдано</div>
             </div>
         </div>
 
+        <!-- Предупреждение о WSDL-атаках -->
+        {% if wsdl_attacks_count > 0 %}
+        <div class="alert">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Обнаружены попытки WSDL-сканирования!</strong><br>
+                Злоумышленникам отправлены фейковые WSDL-ответы для введения в заблуждение.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Графики -->
         <div class="charts">
             <div class="chart">
-                <h3>Активность IP-адресов</h3>
-                <img src="data:image/png;base64,{{ chart13 }}" alt="Активность IP"> <!--Отображение графика активности IP-адресов в HTML-->
+                <h3>📈 Активность IP-адресов</h3>
+                <img src="data:image/png;base64,{{ chart13 }}" alt="Активность IP">
+                <div class="chart-caption">Темно-красный — WSDL-сканирования, красный — превышение лимита, зеленый — разрешен</div>
             </div> 
             <div class="chart">
-                <h3>Статус IP-адресов</h3>
-                <img src="data:image/png;base64,{{ chart15 }}" alt="Статус IP"> <!--Отображение графика со статусом IP-адресов в HTML-->
+                <h3>🥧 Статус IP-адресов</h3>
+                <img src="data:image/png;base64,{{ chart15 }}" alt="Статус IP">
+                <div class="chart-caption">Разделение на обычные блокировки и WSDL-атаки</div>
             </div>
+            {% if chart19 %}
+            <div class="chart">
+                <h3>🔍 WSDL-сканирования по IP</h3>
+                <img src="data:image/png;base64,{{ chart19 }}" alt="WSDL атаки">
+                <div class="chart-caption">Количество попыток WSDL-запросов с каждого IP</div>
+            </div>
+            {% endif %}
         </div>
 
-        <h3>Таблица IP-адресов</h3> <!--Заголовок таблицы-->
+        <!-- Таблица IP-адресов -->
+        <h3>📋 Таблица IP-адресов</h3>
         <table>
             <thead>
-                <tr><th>IP-адрес</th><th>Запросов/мин</th><th>Статус</th></tr> <!--Наименования столбцов таблицы-->
+                <tr>
+                    <th>IP-адрес</th>
+                    <th>Запросов/мин</th>
+                    <th>Статус</th>
+                    <th>Тип угрозы</th>
+                    <th>Действие</th>
+                </tr>
             </thead>
             <tbody>
-                {% for ip in ip_status_list %} <!--Генерация строк для каждого IP-адреса-->
+                {% for ip in ip_status_list %}
                 <tr>
                     <td>{{ ip.address }}</td>
-                    <td>{{ ip.requests }}</td> <!--Ячейки таблицы, содержащие IP-адрес и количество запросов-->
+                    <td>{{ ip.requests }}</td>
                     <td class="{% if ip.status == 'ЗАБЛОКИРОВАН' %}blocked{% else %}allowed{% endif %}">
-                        {% if ip.status == 'ЗАБЛОКИРОВАН' %}ЗАБЛОКИРОВАН{% else %}РАЗРЕШЕН{% endif %} <!--Условное форматирование статуса IP-адреса--> 
+                        {{ ip.status }}
+                    </td>
+                    <td>
+                        {% if ip.is_wsdl_attack %}
+                            <span class="wsdl-badge">🔍 WSDL-сканирование</span>
+                        {% else %}
+                            <span style="color: gray;">📱 Обычный трафик</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ip.fake_wsdl_sent %}
+                            <span class="fake-badge">🍭 Выдан фейковый WSDL</span>
+                        {% elif ip.status == 'ЗАБЛОКИРОВАН' %}
+                            <span>🚫 Блокировка по лимиту</span>
+                        {% else %}
+                            <span>✅ Пропуск</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <div class="footer"> <!--Создание подвала (футера) страницы--> 
-            <p>Угроза УБИ.151 "Сканирование веб-сервисов, разработанных на основе языка описания WSDL"</p> <!--Текстовый абзац с описанием угрозы--> 
+        <!-- Детали WSDL-атак -->
+        {% if wsdl_attacks_detail %}
+        <h3>⚠️ Детали обнаруженных WSDL-атак</h3>
+        <table>
+            <thead>
+                <tr><th>IP-адрес</th><th>Время</th><th>Попытка №</th><th>Запрошенный URL</th></tr>
+            </thead>
+            <tbody>
+                {% for attack in wsdl_attacks_detail %}
+                <tr>
+                    <td>{{ attack.ip }}</td>
+                    <td>{{ attack.timestamp }}</td>
+                    <td>{{ attack.attempt }}</td>
+                    <td><code>{{ attack.url }}</code></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <div class="footer">
+            <p><strong>Угроза УБИ.151</strong> "Сканирование веб-сервисов, разработанных на основе языка описания WSDL"</p>
+            <p>Реализована защита: rate limiting ({{ threshold }} запросов/мин) + фейковые WSDL-ответы для сканеров</p>
+            <p>Лабораторная работа №1 | Вариант №17</p>
         </div>
     </div>
 </body>
 </html>
-
-<!--Лысенкова М.А.: приложение разворачивается без проблем, с первого раза-->
-
