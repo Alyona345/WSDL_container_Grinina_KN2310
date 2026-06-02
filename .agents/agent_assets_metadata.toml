@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "s60VIEeh08cM8AoqSYPyF"
-uri = "file://flowchart_gost.png"
-type = "image"
-title = "Блок-схема алгоритма контейнера безопасности (ГОСТ 19.701-90)"
