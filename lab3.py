@@ -1,5 +1,5 @@
 # БЛОК 1: ИМПОРТ НЕОБХОДИМЫХ БИБЛИОТЕК
-import matplotlib
+import matplotlib 
 matplotlib.use('Agg')
 from sympy import symbols
 import matplotlib.pyplot as plt
