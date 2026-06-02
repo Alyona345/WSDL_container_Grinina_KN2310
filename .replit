@@ -1,20 +1,29 @@
-run = ["python", "manage.py", "runserver", "0.0.0.0:3000"]
-entrypoint = "manage.py"
-modules = ["python-3.10:v18-20230807-322e88b"]
+# БЛОК 1: ОСНОВНЫЕ ПАРАМЕТРЫ ЗАПУСКА
+run = ["python", "manage.py", "runserver", "0.0.0.0:3000"] # Команда запуска по умолчанию при нажатии кнопки Run в Replit
+entrypoint = "manage.py" # Главный файл проекта — отображается первым в редакторе при открытии
+modules = ["python-3.10:v18-20230807-322e88b"] # Версия Python: 3.10
 
-hidden = [".pythonlibs"]
+hidden = [".pythonlibs"] # Папки и файлы, скрытые в файловом дереве редактора Replit
 
+# БЛОК 2: СИСТЕМНЫЕ ЗАВИСИМОСТИ (Nix)
 [nix]
 channel = "stable-24_05"
-packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk"]
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk"] # Системные библиотеки, нужные matplotlib для рендеринга графиков
 
+# БЛОК 3: ЮНИТ-ТЕСТЫ
 [unitTest]
-language = "python3"
+language = "python3" # Указывает Replit использовать python3 для запуска тестов
+# Тесты описываются в wsdl_security/tests.py
 
+# БЛОК 4: ДЕПЛОЙ (публикация в продакшн)
 [deployment]
 run = ["python", "manage.py", "runserver", "0.0.0.0:3000"]
-deploymentTarget = "gce"
+deploymentTarget = "gce" # Платформа деплоя
 
+# БЛОК 5: ПРОБРОС ПОРТОВ
+# Сопоставляет внутренний порт контейнера с внешним портом
+# localPort  — порт внутри Replit-контейнера
+# externalPort — порт, доступный из браузера через публичный URL
 [[ports]]
 localPort = 3000
 externalPort = 3000
@@ -24,30 +33,32 @@ localPort = 3000
 externalPort = 3000
 
 
-
+# БЛОК 6: НАСТРОЙКИ ИИ-АГЕНТА
 [agent]
 expertMode = true
 
+# БЛОК 7: ВОРКФЛОУ (автоматизация запуска)
 [workflows]
+# Какой воркфлоу запускается при нажатии кнопки Run
 runButton = "Project"
 
-[[workflows.workflow]]
+[[workflows.workflow]] # Воркфлоу "Project"
 name = "Project"
 mode = "parallel"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start application"
+args = "Start application" # Запускает дочерний воркфлоу "Start application"
 
-[[workflows.workflow]]
+[[workflows.workflow]] # Воркфлоу "Start application"
 name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "bash -c 'fuser -k 3000/tcp 2>/dev/null; python manage.py runserver 0.0.0.0:3000'"
-waitForPort = 3000 
+waitForPort = 3000 # Следующий шаг не начнётся пока порт 3000 не ответит
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -55,4 +66,4 @@ args = "python manage.py runserver 0.0.0.0:3000"
 waitForPort = 3000
 
 [workflows.workflow.metadata]
-outputType = "webview"
+outputType = "webview" # Результат воркфлоу отображается как веб-превью в Replit
