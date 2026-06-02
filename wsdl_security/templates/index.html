@@ -251,7 +251,7 @@
         <!-- Навигация между страницами -->
         <div class="nav">
             <a href="/">📊 Главная статистика</a>
-            <a href="/fake-wsdl/">🍭 Посмотреть фейковые WSDL</a>
+            <a href="/fake-wsdl/">Посмотреть фейковые WSDL</a>
         </div>
 
         <!-- БЛОК 3: КАРТОЧКИ СТАТИСТИКИ-->
@@ -348,7 +348,7 @@
                     </td>
                     <td>
                         {% if ip.fake_wsdl_sent %}
-                            <span class="fake-badge">🍭 Выдан фейковый WSDL</span>
+                            <span class="fake-badge">Выдан фейковый WSDL</span>
                         {% elif ip.status == 'ЗАБЛОКИРОВАН' %}
                             <span>🚫 Блокировка по лимиту</span>
                         {% else %}

@@ -20,14 +20,6 @@ language = "python3" # Указывает Replit использовать python
 run = ["python", "manage.py", "runserver", "0.0.0.0:3000"]
 deploymentTarget = "gce" # Платформа деплоя
 
-# БЛОК 5: ПРОБРОС ПОРТОВ
-# Сопоставляет внутренний порт контейнера с внешним портом
-# localPort  — порт внутри Replit-контейнера
-# externalPort — порт, доступный из браузера через публичный URL
-[[ports]]
-localPort = 3000
-externalPort = 3000
-
 [[ports]]
 localPort = 3000
 externalPort = 3000
@@ -66,4 +58,4 @@ args = "python manage.py runserver 0.0.0.0:3000"
 waitForPort = 3000
 
 [workflows.workflow.metadata]
-outputType = "webview" # Результат воркфлоу отображается как веб-превью в Replit
+outputType = "webview"  # Результат воркфлоу отображается как веб-превью в Replit
