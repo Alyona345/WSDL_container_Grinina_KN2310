@@ -1,4 +1,3 @@
-# wsdl_security/views.py
 from django.shortcuts import render
 from django.http import HttpResponse
 from lab3 import (

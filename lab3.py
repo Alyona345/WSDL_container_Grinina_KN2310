@@ -1,12 +1,12 @@
 # БЛОК 1: ИМПОРТ НЕОБХОДИМЫХ БИБЛИОТЕК
-import matplotlib 
-matplotlib.use('Agg')
-from sympy import symbols
-import matplotlib.pyplot as plt
-import base64
+import matplotlib
+matplotlib.use('Agg') # Отключение GUI-рендеринга для matplotlib
+from sympy import symbols # Символьная математика для расчета порога
+import matplotlib.pyplot as plt 
+import base64 # Кодирование графиков в строку для передачи в HTML
 from io import BytesIO
 from datetime import datetime
-import re
+import re # Регулярные выражения — для поиска WSDL-паттернов в запросах
 
 # БЛОК 2: МОДУЛЬ ЗАЩИТЫ ОТ WSDL-СКАНИРОВАНИЯ (УБИ.151)
 WSDL_INDICATORS = [
@@ -20,9 +20,10 @@ WSDL_INDICATORS = [
     r'GetPortType',
     r'GetBinding',
     r'\.wsdl',
-]
+] # Список паттернов, характерных для WSDL-запросов
 
-def is_wsdl_request(url='', headers=None, body=''):
+def is_wsdl_request(url='', headers=None, body=''):   # Проверяет URL, заголовки и первые 500 байт тела запроса
+    # Возвращает True, если запрос похож на WSDL-сканирование
     if headers is None:
         headers = {}
     if 'wsdl' in url.lower() or '?wsdl' in url.lower() or '/service' in url.lower():
@@ -36,7 +37,8 @@ def is_wsdl_request(url='', headers=None, body=''):
             return True
     return False
 
-def generate_fake_wsdl(ip_address, attempt_number=1):
+def generate_fake_wsdl(ip_address, attempt_number=1): # При attempt_number > 3 — возвращает "AccessDenied"
+    # При первых попытках — возвращает правдоподобный фейковый XML с несуществующим адресом сервиса https://api.telecom.service/fake
     if attempt_number > 3:
         return '''<?xml version="1.0"?>
 <wsdl:definitions name="AccessDenied" 
@@ -73,10 +75,12 @@ def generate_fake_wsdl(ip_address, attempt_number=1):
 class WSDLProtector:
     def __init__(self, rate_limit=180):
         self.rate_limit = rate_limit
-        self.attackers_log = {}
-        self.fake_responses = {}
-        self.wsdl_attacks = []
+        self.attackers_log = {} # {ip: количество WSDL-попыток}
+        self.fake_responses = {} # {ip: сколько фейков отправлено}
+        self.wsdl_attacks = [] # полный лог всех атак с временными метками
 
+    # Фиксируем атаку, увеличиваем счётчик попыток
+    # Генерируем фейковый WSDL и возвращаем статус 'FAKE_WSDL'
     def check_request(self, ip_address, request_count, url='', headers=None, body=''):
         if headers is None:
             headers = {}
@@ -111,24 +115,18 @@ class WSDLProtector:
             'attacks_detail': self.wsdl_attacks[-10:]
         }
 
-
-# ============================================================================
 # БЛОК 3: РАСЧЕТ ПОРОГА БЛОКИРОВКИ
-# ============================================================================
 
-R, T, N = symbols("R T N")
-BASE_RPS = 120
-WINDOW = 60
-IPS_COUNT = 40
+R, T, N = symbols("R T N") # R — базовый RPS, T — окно в сек, N — число IP
+BASE_RPS = 120 # Разрешённый трафик всего: 120 запросов/сек
+WINDOW = 60 # Временное окно: 60 секунд
+IPS_COUNT = 40 # Количество IP в сети
 
-threshold_expr = (R * T) / N
+threshold_expr = (R * T) / N # Формула: суммарный трафик / число IP
 THRESHOLD = float(threshold_expr.subs({R: BASE_RPS, T: WINDOW, N: IPS_COUNT}))
 print(f"Порог блокировки: {THRESHOLD:.0f} запросов за {WINDOW} сек")
 
-
-# ============================================================================
 # БЛОК 4: ВХОДНЫЕ ДАННЫЕ (IP-АДРЕСА И ЗАПРОСЫ)
-# ============================================================================
 
 ip_addresses = [
     "192.165.1.10", "192.168.1.11", "10.0.0.5", "192.168.1.12",
@@ -138,10 +136,7 @@ ip_addresses = [
 
 requests_per_ip = [183, 60, 190, 60, 187, 49, 203, 39, 60, 198]
 
-
-# ============================================================================
-# БЛОК 5: ПРИНУДИТЕЛЬНОЕ ДОБАВЛЕНИЕ WSDL-АТАК ДЛЯ ДЕМОНСТРАЦИИ
-# ============================================================================
+# БЛОК 5: ДОБАВЛЕНИЕ WSDL-АТАК ДЛЯ ДЕМОНСТРАЦИИ
 
 # СПИСОК IP, КОТОРЫЕ БУДУТ СЧИТАТЬСЯ WSDL-СКАНЕРАМИ (для демонстрации)
 # В реальном приложении эти данные определяются автоматически
@@ -155,11 +150,7 @@ WSDL_ATTEMPTS_MAP = {
     "10.0.0.15": 1,
 }
 
-
-# ============================================================================
 # БЛОК 6: ОБРАБОТКА ЗАПРОСОВ И ПРИМЕНЕНИЕ ЗАЩИТЫ
-# ============================================================================
-
 protector = WSDLProtector(rate_limit=THRESHOLD)
 
 blocked_status = []
@@ -172,7 +163,7 @@ print("\n" + "="*60)
 print("ОБРАБОТКА ЗАПРОСОВ С WSDL-ЗАЩИТОЙ")
 print("="*60)
 
-# ПРИНУДИТЕЛЬНО ДОБАВЛЯЕМ WSDL-АТАКИ В ЛОГ ЗАЩИТНИКА
+# Сначала вручную заполняем лог для WSDL-атакующих (демо-данные)
 for ip in WSDL_ATTACKER_IPS:
     attempts = WSDL_ATTEMPTS_MAP.get(ip, 1)
     protector.attackers_log[ip] = attempts
@@ -212,10 +203,7 @@ print(f"  - Заблокировано: {len(blocked_ips)} IP")
 print(f"  - Из них WSDL-атак: {len(wsdl_attack_ips)}")
 print(f"  - Выдано фейковых WSDL: {sum(protector.fake_responses.values())}")
 
-
-# ============================================================================
 # БЛОК 7: ФУНКЦИИ ДЛЯ ДОСТУПА ИЗ VIEWS.PY
-# ============================================================================
 
 def get_fake_wsdl_for_ip(ip_address):
     """Возвращает фейковый WSDL для конкретного IP"""
@@ -223,9 +211,10 @@ def get_fake_wsdl_for_ip(ip_address):
         attempt = protector.attackers_log[ip_address]
         return generate_fake_wsdl(ip_address, attempt)
     return generate_fake_wsdl(ip_address, 1)
-
+# Возвращает фейковый WSDL конкретного IP с учётом числа его попыток
+# Чем больше попыток — тем более краткий ответ он получает
 def get_attackers_with_fake_wsdl():
-    """Возвращает список IP, которым были отправлены фейковые WSDL"""
+    # Собирает и возвращает список словарей для отображения в шаблоне: [{ip, attempts, fake_wsdl, fake_count}]
     attackers_list = []
     for ip in wsdl_attack_ips:
         attackers_list.append({
@@ -236,7 +225,5 @@ def get_attackers_with_fake_wsdl():
         })
     return attackers_list
 
-
-print("\n✅ lab3.py загружен и инициализирован!")
 print(f"   Обнаружено WSDL-атак: {len(wsdl_attack_ips)} IP")
 print(f"   Заблокировано: {len(blocked_ips)} IP, Разрешено: {len(allowed_ips)} IP")
