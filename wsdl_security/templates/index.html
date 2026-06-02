@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+<!-- БЛОК 1: МЕТА И ПОДКЛЮЧЕНИЕ СТИЛЕЙ                           -->
 <head>
     <meta charset="UTF-8">
     <title>Защита WSDL-сервера от сканирования (УБИ.151)</title>
@@ -15,7 +16,7 @@
             margin: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-        }
+        }  /* Градиентный фон на всю высоту экрана */
 
         .container {
             max-width: 1400px;
@@ -24,7 +25,7 @@
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
+        }  /* Белая карточка по центру — основной контейнер страницы */
 
         h1 {
             color: #333;
@@ -85,7 +86,7 @@
             min-width: 160px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: transform 0.2s;
-        }
+        }  /* Карточки статистики — каждый тип имеет свой цвет фона */
 
         .stat-card:hover {
             transform: translateY(-3px);
@@ -169,7 +170,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             font-weight: 600;
-        }
+        }   /* Таблица: шапка с градиентом, строки подсвечиваются при наведении */
 
         tr:hover {
             background: #f5f5f5;
@@ -238,6 +239,7 @@
         }
     </style>
 </head>
+<!-- БЛОК 2: ЗАГОЛОВОК И НАВИГАЦИЯ-->
 <body>
     <div class="container">
         <h1>🛡️ Защита WSDL-сервера от сканирования</h1>
@@ -252,12 +254,14 @@
             <a href="/fake-wsdl/">🍭 Посмотреть фейковые WSDL</a>
         </div>
 
-        <!-- Карточки статистики -->
+        <!-- БЛОК 3: КАРТОЧКИ СТАТИСТИКИ-->
         <div class="stats">
+             <!-- Порог — вычислен в lab3.py формулой (R×T)/N -->
             <div class="stat-card">
                 <div class="stat-value">{{ threshold }}</div>
                 <div class="stat-label">📊 Порог блокировки (запросов/мин)</div>
             </div>
+            <!-- Каждая переменная передана из views.index() через context{} -->
             <div class="stat-card allow">
                 <div class="stat-value">{{ allowed_count }}</div>
                 <div class="stat-label">✅ Разрешено IP</div>
@@ -276,7 +280,8 @@
             </div>
         </div>
 
-        <!-- Предупреждение о WSDL-атаках -->
+        <!-- БЛОК 4: ПРЕДУПРЕЖДЕНИЕ ОБ АТАКАХ -->
+        <!-- Если есть WSDL-атаки, показываем предупреждение -->
         {% if wsdl_attacks_count > 0 %}
         <div class="alert">
             <span class="alert-icon">⚠️</span>
@@ -287,18 +292,22 @@
         </div>
         {% endif %}
 
-        <!-- Графики -->
+        <!-- БЛОК 5: ГРАФИКИ -->
         <div class="charts">
+            <!-- График 13: столбчатый — активность каждого IP -->
+            <!-- Изображение передаётся как base64-строка, встроенная прямо в HTML -->
             <div class="chart">
                 <h3>📈 Активность IP-адресов</h3>
                 <img src="data:image/png;base64,{{ chart13 }}" alt="Активность IP">
                 <div class="chart-caption">Темно-красный — WSDL-сканирования, красный — превышение лимита, зеленый — разрешен</div>
             </div> 
+             <!-- График 15: круговая диаграмма — доли разрешённых/заблокированных -->
             <div class="chart">
-                <h3>🥧 Статус IP-адресов</h3>
+                <h3>Статус IP-адресов</h3>
                 <img src="data:image/png;base64,{{ chart15 }}" alt="Статус IP">
                 <div class="chart-caption">Разделение на обычные блокировки и WSDL-атаки</div>
             </div>
+             <!-- График 19: только если есть WSDL-атаки — количество попыток по IP -->
             {% if chart19 %}
             <div class="chart">
                 <h3>🔍 WSDL-сканирования по IP</h3>
@@ -308,7 +317,7 @@
             {% endif %}
         </div>
 
-        <!-- Таблица IP-адресов -->
+        <!-- БЛОК 6: ТАБЛИЦА IP-АДРЕСОВ -->
         <h3>📋 Таблица IP-адресов</h3>
         <table>
             <thead>
@@ -321,10 +330,12 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- Цикл по списку ip_status_list, сформированному в views.py -->
                 {% for ip in ip_status_list %}
                 <tr>
                     <td>{{ ip.address }}</td>
                     <td>{{ ip.requests }}</td>
+                    <!-- CSS-класс зависит от статуса: красный или зелёный текст -->
                     <td class="{% if ip.status == 'ЗАБЛОКИРОВАН' %}blocked{% else %}allowed{% endif %}">
                         {{ ip.status }}
                     </td>
@@ -349,7 +360,8 @@
             </tbody>
         </table>
 
-        <!-- Детали WSDL-атак -->
+        <!-- БЛОК 7: ЖУРНАЛ WSDL-АТАК -->
+        <!-- Показывается только если в wsdl_attacks_detail есть записи -->
         {% if wsdl_attacks_detail %}
         <h3>⚠️ Детали обнаруженных WSDL-атак</h3>
         <table>
@@ -357,6 +369,7 @@
                 <tr><th>IP-адрес</th><th>Время</th><th>Попытка №</th><th>Запрошенный URL</th></tr>
             </thead>
             <tbody>
+                <!-- Последние 10 атак из protector.wsdl_attacks -->
                 {% for attack in wsdl_attacks_detail %}
                 <tr>
                     <td>{{ attack.ip }}</td>
@@ -369,10 +382,10 @@
         </table>
         {% endif %}
 
+        <!-- БЛОК 8: ПОДВАЛ -->
         <div class="footer">
             <p><strong>Угроза УБИ.151</strong> "Сканирование веб-сервисов, разработанных на основе языка описания WSDL"</p>
             <p>Реализована защита: rate limiting ({{ threshold }} запросов/мин) + фейковые WSDL-ответы для сканеров</p>
-            <p>Лабораторная работа №1 | Вариант №17</p>
         </div>
     </div>
 </body>
