@@ -1,5 +1,6 @@
+# БЛОК 1: ИМПОРТЫ
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse # Используется для отдачи файла на скачивание
 from lab3 import (
     ip_addresses, requests_per_ip, THRESHOLD, blocked_status, 
     blocked_ips, allowed_ips, wsdl_attack_ips, fake_wsdl_sent_ips,
