@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+<!-- БЛОК 1: МЕТА И СТИЛИ -->
 <head>
     <meta charset="UTF-8">
     <title>Просмотр фейковых WSDL-ответов | УБИ.151</title>
@@ -89,6 +90,8 @@
             font-weight: bold;
         }
 
+        /* Двухколоночная сетка: список IP слева, WSDL-контент справа */
+        .two
         .two-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -116,6 +119,7 @@
             overflow-y: auto;
         }
 
+        /* Список IP-нарушителей */
         .ip-list li {
             padding: 12px;
             margin: 8px 0;
@@ -228,32 +232,37 @@
         }
     </style>
 </head>
+<!-- БЛОК 2: ЗАГОЛОВОК И НАВИГАЦИЯ -->
 <body>
     <div class="container">
-        <h1>🍭 Просмотр фейковых WSDL-ответов</h1>
+        <h1> Просмотр фейковых WSDL-ответов</h1>
         <div class="subtitle">
             Угроза <strong>УБИ.151</strong> "Сканирование веб-сервисов WSDL"<br>
             Здесь показано, какие поддельные WSDL получают злоумышленники
         </div>
 
+        <!-- Навигация — зеркальная с index.html, текущая страница выделена красным -->
         <div class="nav">
             <a href="/">📊 Главная страница (статистика)</a>
             <a href="/fake-wsdl/" style="background: #e74c3c;">🍭 Фейковые WSDL (текущая)</a>
         </div>
 
-        <!-- Статистика -->
+        <!-- БЛОК 3: КАРТОЧКИ СТАТИСТИКИ -->
         <div class="stats-bar">
+             <!-- Количество уникальных IP, которые пытались получить WSDL -->
             <div class="stat-card">
                 <div class="stat-value">{{ total_attacks }}</div>
                 <div>🔍 IP-адресов-нарушителей</div>
             </div>
+            <!-- Общее количество попыток WSDL-запросов -->
             <div class="stat-card">
                 <div class="stat-value">{{ total_fake_wsdl_sent }}</div>
-                <div>🍭 Фейковых WSDL отправлено</div>
+                <div> Фейковых WSDL отправлено</div>
             </div>
         </div>
 
-        <!-- Информационное пояснение -->
+        <!-- БЛОК 4: ИНФОРМАЦИОННАЯ ПЛАШКА -->
+         <!-- Голубой блок — объясняет принцип работы защиты -->
         <div class="info-box">
             <strong>💡 Как работает защита от УБИ.151:</strong><br>
             Когда злоумышленник пытается получить WSDL-файл (через <code>?wsdl</code>, <code>/service.asmx</code> и т.д.),
@@ -261,6 +270,8 @@
             Сканер получает фиктивную структуру, что вводит его в заблуждение и защищает реальный сервис.
         </div>
 
+        <!-- БЛОК 5: ДВУХКОЛОНОЧНЫЙ ИНТЕРФЕЙС (основной контент) -->
+         <!-- Весь блок показывается только если список attackers не пуст -->
         {% if attackers %}
         <div class="two-columns">
             <!-- Левая колонка: список нарушителей -->
@@ -285,7 +296,7 @@
             <!-- Правая колонка: просмотр фейкового WSDL -->
             <div class="panel">
                 <h3>
-                    🍭 Фейковый WSDL-ответ
+                    Фейковый WSDL-ответ
                     {% if selected_ip %}
                         <span style="font-size: 14px; color: #e74c3c;">для {{ selected_ip }}</span>
                     {% endif %}
@@ -295,6 +306,7 @@
                     <div class="wsdl-viewer">
                         <pre>{{ selected_wsdl|escape }}</pre>
                     </div>
+                 <!-- Ссылка на скачивание — вызывает views.download_fake_wsdl -->
                     <a href="/fake-wsdl/download/{{ selected_ip }}/" class="download-btn">
                         📥 Скачать фейковый WSDL ({{ selected_ip }}.xml)
                     </a>
@@ -320,6 +332,7 @@
         </div>
         {% endif %}
 
+        <!-- БЛОК 6: ПОДВАЛ -->
         <div class="footer">
             <p><strong>Угроза УБИ.151</strong> | Защита реализована через подмену WSDL-ответов</p>
             <p>Злоумышленник видит фейковую структуру, реальный WSDL скрыт</p>
