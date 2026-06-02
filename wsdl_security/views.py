@@ -1,6 +1,8 @@
 # БЛОК 1: ИМПОРТЫ
 from django.shortcuts import render
 from django.http import HttpResponse # Используется для отдачи файла на скачивание
+# Импорт всех нужных данных и объектов прямо из lab3.py
+# lab3.py выполняется один раз при старте сервера — все переменные уже заполнены
 from lab3 import (
     ip_addresses, requests_per_ip, THRESHOLD, blocked_status, 
     blocked_ips, allowed_ips, wsdl_attack_ips, fake_wsdl_sent_ips,
@@ -12,7 +14,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
-
+# БЛОК 2: ГЛАВНАЯ СТРАНИЦА — СТАТИСТИКА И ГРАФИКИ
 def index(request):
     """Главная страница со статистикой и графиками"""
 
@@ -23,11 +25,11 @@ def index(request):
             'address': ip_addresses[i],
             'requests': requests_per_ip[i],
             'status': blocked_status[i],
-            'is_wsdl_attack': ip_addresses[i] in wsdl_attack_ips,
-            'fake_wsdl_sent': ip_addresses[i] in fake_wsdl_sent_ips
+            'is_wsdl_attack': ip_addresses[i] in wsdl_attack_ips, # Проверяем: есть ли этот IP в списке WSDL-атакующих
+            'fake_wsdl_sent': ip_addresses[i] in fake_wsdl_sent_ips # Проверяем: был ли уже отправлен фейковый WSDL
         })
 
-    # ГРАФИК 13
+    # ГРАФИК 13: столбчатый — активность IP
     plt.figure(figsize=(10, 6))
     colors = []
     for i, ip in enumerate(ip_addresses):
