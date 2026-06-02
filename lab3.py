@@ -1,7 +1,4 @@
-# ============================================================================
 # БЛОК 1: ИМПОРТ НЕОБХОДИМЫХ БИБЛИОТЕК
-# ============================================================================
-
 import matplotlib
 matplotlib.use('Agg')
 from sympy import symbols
@@ -11,11 +8,7 @@ from io import BytesIO
 from datetime import datetime
 import re
 
-
-# ============================================================================
 # БЛОК 2: МОДУЛЬ ЗАЩИТЫ ОТ WSDL-СКАНИРОВАНИЯ (УБИ.151)
-# ============================================================================
-
 WSDL_INDICATORS = [
     r'[Ww][Ss][Dd][Ll]',
     r'\?wsdl',
@@ -202,7 +195,7 @@ for i, ip in enumerate(ip_addresses):
     if ip in WSDL_ATTACKER_IPS:
         blocked_status.append("ЗАБЛОКИРОВАН")
         blocked_ips.append(ip)
-        print(f"🍭 {ip}: Отправлен фейковый WSDL (попыток: {protector.attackers_log[ip]})")
+        print(f" {ip}: Отправлен фейковый WSDL (попыток: {protector.attackers_log[ip]})")
     # Проверка на превышение лимита
     elif requests_per_ip[i] > THRESHOLD:
         blocked_status.append("ЗАБЛОКИРОВАН")
